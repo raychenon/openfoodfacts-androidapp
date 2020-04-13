@@ -500,7 +500,6 @@ public class AddProductIngredientsFragment extends BaseFragment implements Photo
                 .centerInside()
                 .into(imageIngredients);
         }
-        Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
     }
 
     /**

@@ -1028,6 +1028,5 @@ public class AddProductNutritionFactsFragment extends BaseFragment implements Ph
                 .centerInside()
                 .into(imageNutritionFacts);
         }
-        Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
     }
 }
