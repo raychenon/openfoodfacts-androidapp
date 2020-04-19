@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,9 +65,6 @@ import static openfoodfacts.github.scrachx.openfood.models.ProductImageField.ING
  * @see R.layout#fragment_add_product_ingredients
  */
 public class AddProductIngredientsFragment extends BaseFragment implements PhotoReceiver {
-    private static final String PARAM_INGREDIENTS = "ingredients_text";
-    private static final String PARAM_TRACES = "add_traces";
-    private static final String PARAM_LANGUAGE = "lang";
     @BindView(R.id.btnAddImageIngredients)
     ImageView imageIngredients;
     @BindView(R.id.btnEditImageIngredients)
@@ -171,7 +169,7 @@ public class AddProductIngredientsFragment extends BaseFragment implements Photo
     }
 
     private String getImageIngredients() {
-        return productDetails.get("image_ingredients");
+        return productDetails.get(OfflineSavedProduct.KEYS.IMAGE_INGREDIENTS);
     }
 
     @Nullable
@@ -292,14 +290,12 @@ public class AddProductIngredientsFragment extends BaseFragment implements Photo
                         }
                     });
             }
-            String lc = productDetails.get(PARAM_LANGUAGE) != null ? productDetails.get(PARAM_LANGUAGE) : "en";
-            if (productDetails.get(PARAM_INGREDIENTS + "_" + lc) != null) {
-                ingredients.setText(productDetails.get(PARAM_INGREDIENTS + "_" + lc));
-            } else if (productDetails.get(PARAM_INGREDIENTS + "_" + "en") != null) {
-                ingredients.setText(productDetails.get(PARAM_INGREDIENTS + "_" + "en"));
+            String ingredientsText = mOfflineSavedProduct.getIngredients();
+            if (!TextUtils.isEmpty(ingredientsText)) {
+                ingredients.setText(ingredientsText);
             }
-            if (productDetails.get(PARAM_TRACES) != null) {
-                List<String> chipValues = Arrays.asList(productDetails.get(PARAM_TRACES).split("\\s*,\\s*"));
+            if (productDetails.get(OfflineSavedProduct.KEYS.PARAM_TRACES) != null) {
+                List<String> chipValues = Arrays.asList(productDetails.get(OfflineSavedProduct.KEYS.PARAM_TRACES).split("\\s*,\\s*"));
                 traces.setText(chipValues);
             }
         }
@@ -419,10 +415,10 @@ public class AddProductIngredientsFragment extends BaseFragment implements Photo
         if (activity instanceof AddProductActivity) {
             String languageCode = ((AddProductActivity) activity).getProductLanguageForEdition();
             String lc = (!languageCode.isEmpty()) ? languageCode : "en";
-            targetMap.put(PARAM_INGREDIENTS + "_" + lc, ingredients.getText().toString());
+            targetMap.put(OfflineSavedProduct.KEYS.GET_PARAM_INGREDIENTS(lc), ingredients.getText().toString());
             List<String> list = traces.getChipValues();
             String string = StringUtils.join(list, ",");
-            targetMap.put(PARAM_TRACES.substring(4), string);
+            targetMap.put(OfflineSavedProduct.KEYS.PARAM_TRACES.substring(4), string);
         }
     }
 
@@ -435,12 +431,12 @@ public class AddProductIngredientsFragment extends BaseFragment implements Photo
             if (!ingredients.getText().toString().isEmpty()) {
                 String languageCode = ((AddProductActivity) activity).getProductLanguageForEdition();
                 String lc = (!languageCode.isEmpty()) ? languageCode : "en";
-                ((AddProductActivity) activity).addToMap(PARAM_INGREDIENTS + "_" + lc, ingredients.getText().toString());
+                ((AddProductActivity) activity).addToMap(OfflineSavedProduct.KEYS.GET_PARAM_INGREDIENTS(lc), ingredients.getText().toString());
             }
             if (!traces.getChipValues().isEmpty()) {
                 List<String> list = traces.getChipValues();
                 String string = StringUtils.join(list, ",");
-                ((AddProductActivity) activity).addToMap(PARAM_TRACES, string);
+                ((AddProductActivity) activity).addToMap(OfflineSavedProduct.KEYS.PARAM_TRACES, string);
             }
         }
     }
