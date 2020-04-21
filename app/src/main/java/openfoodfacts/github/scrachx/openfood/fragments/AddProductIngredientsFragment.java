@@ -50,6 +50,7 @@ import openfoodfacts.github.scrachx.openfood.models.AllergenNameDao;
 import openfoodfacts.github.scrachx.openfood.models.DaoSession;
 import openfoodfacts.github.scrachx.openfood.models.OfflineSavedProduct;
 import openfoodfacts.github.scrachx.openfood.models.Product;
+import openfoodfacts.github.scrachx.openfood.utils.EditTextUtils;
 import openfoodfacts.github.scrachx.openfood.utils.FileUtils;
 import openfoodfacts.github.scrachx.openfood.utils.LocaleHelper;
 import openfoodfacts.github.scrachx.openfood.utils.Utils;
@@ -156,10 +157,10 @@ public class AddProductIngredientsFragment extends BaseFragment implements Photo
             Toast.makeText(activity, R.string.error_adding_ingredients, Toast.LENGTH_SHORT).show();
             activity.finish();
         }
-        if (ingredients.getText().toString().isEmpty() && getImageIngredients() != null && !getImageIngredients().isEmpty()) {
+        if (EditTextUtils.isEmpty(ingredients) && getImageIngredients() != null && !getImageIngredients().isEmpty()) {
             extractIngredients.setVisibility(View.VISIBLE);
             imagePath = getImageIngredients();
-        } else if (editProduct && ingredients.getText().toString().isEmpty() && product.getImageIngredientsUrl() != null && !product.getImageIngredientsUrl().isEmpty()) {
+        } else if (editProduct && EditTextUtils.isEmpty(ingredients) && product.getImageIngredientsUrl() != null && !product.getImageIngredientsUrl().isEmpty()) {
             extractIngredients.setVisibility(View.VISIBLE);
         }
         loadAutoSuggestions();
@@ -177,6 +178,19 @@ public class AddProductIngredientsFragment extends BaseFragment implements Photo
         return (AddProductActivity) getActivity();
     }
 
+    private List<String> extractTracesChipValues(Product product) {
+        if (product == null || product.getTracesTags() == null) {
+            return new ArrayList<>();
+        }
+        List<String> tracesTags = product.getTracesTags();
+        final List<String> chipValues = new ArrayList<>();
+        final String appLanguageCode = LocaleHelper.getLanguage(activity);
+        for (String tag : tracesTags) {
+            chipValues.add(getTracesName(appLanguageCode, tag));
+        }
+        return chipValues;
+    }
+
     /**
      * Pre fill the fields of the product which are already present on the server.
      */
@@ -186,12 +200,7 @@ public class AddProductIngredientsFragment extends BaseFragment implements Photo
             ingredients.setText(product.getIngredientsText());
         }
         if (product.getTracesTags() != null && !product.getTracesTags().isEmpty()) {
-            List<String> tracesTags = product.getTracesTags();
-            final List<String> chipValues = new ArrayList<>();
-            final String appLanguageCode = LocaleHelper.getLanguage(activity);
-            for (String tag : tracesTags) {
-                chipValues.add(getTracesName(appLanguageCode, tag));
-            }
+            List<String> chipValues = extractTracesChipValues(product);
             traces.setText(chipValues);
         }
     }
@@ -400,7 +409,7 @@ public class AddProductIngredientsFragment extends BaseFragment implements Photo
 
     @OnTextChanged(value = R.id.ingredients_list, callback = OnTextChanged.Callback.AFTER_TEXT_CHANGED)
     void toggleExtractIngredientsButtonVisibility() {
-        if (ingredients.getText().toString().isEmpty()) {
+        if (EditTextUtils.isEmpty(ingredients)) {
             extractIngredients.setVisibility(View.VISIBLE);
         } else {
             extractIngredients.setVisibility(View.GONE);
@@ -423,17 +432,17 @@ public class AddProductIngredientsFragment extends BaseFragment implements Photo
     }
 
     /**
-     * adds only those fields to the query map which are not empty.
+     * adds only those fields to the query map which are not empty and have changed.
      */
     public void getDetails() {
         traces.chipifyAllUnterminatedTokens();
         if (activity instanceof AddProductActivity) {
-            if (!ingredients.getText().toString().isEmpty()) {
+            if (EditTextUtils.isNotEmpty(ingredients) && EditTextUtils.isDifferent(ingredients, product != null ? product.getIngredientsText() : null)) {
                 String languageCode = ((AddProductActivity) activity).getProductLanguageForEdition();
                 String lc = (!languageCode.isEmpty()) ? languageCode : "en";
                 ((AddProductActivity) activity).addToMap(OfflineSavedProduct.KEYS.GET_PARAM_INGREDIENTS(lc), ingredients.getText().toString());
             }
-            if (!traces.getChipValues().isEmpty()) {
+            if (!traces.getChipValues().isEmpty() && EditTextUtils.areChipsDifferent(traces, extractTracesChipValues(product))) {
                 List<String> list = traces.getChipValues();
                 String string = StringUtils.join(list, ",");
                 ((AddProductActivity) activity).addToMap(OfflineSavedProduct.KEYS.PARAM_TRACES, string);

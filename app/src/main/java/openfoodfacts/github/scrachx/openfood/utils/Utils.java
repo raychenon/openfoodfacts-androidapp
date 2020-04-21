@@ -26,20 +26,26 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.style.ClickableSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.firebase.jobdispatcher.*;
+
 import okhttp3.CipherSuite;
 import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
@@ -55,6 +61,7 @@ import openfoodfacts.github.scrachx.openfood.views.OFFApplication;
 import openfoodfacts.github.scrachx.openfood.views.ProductBrowsingListActivity;
 import openfoodfacts.github.scrachx.openfood.views.customtabs.CustomTabActivityHelper;
 import openfoodfacts.github.scrachx.openfood.views.customtabs.WebViewFallback;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONException;
@@ -68,8 +75,6 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static android.text.TextUtils.isEmpty;
 
 public class Utils {
     public static final String SPACE = " ";
@@ -383,7 +388,9 @@ public class Utils {
 
     public static Bitmap getBitmapFromDrawable(Context context, @DrawableRes int drawableId) {
         Drawable drawable = AppCompatResources.getDrawable(context, drawableId);
-        if(drawable==null){return null;}
+        if (drawable == null) {
+            return null;
+        }
         Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable
             .getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
@@ -404,7 +411,7 @@ public class Utils {
             return value;
         }
 
-        if (isEmpty(value)) {
+        if (TextUtils.isEmpty(value)) {
             return "?";
         }
 
@@ -603,10 +610,9 @@ public class Utils {
         }
         // creates the directory if not present yet
         final boolean mkdir = picDir.mkdir();
-        if(!mkdir){
-            Log.e(Utils.class.getSimpleName(),"Can create dir "+picDir);
+        if (!mkdir) {
+            Log.e(Utils.class.getSimpleName(), "Can create dir " + picDir);
         }
-
 
         return picDir;
     }
@@ -654,7 +660,7 @@ public class Utils {
      */
     public static String getEnergy(String value) {
         String defaultValue = StringUtils.EMPTY;
-        if (defaultValue.equals(value) || isEmpty(value)) {
+        if (defaultValue.equals(value) || TextUtils.isEmpty(value)) {
             return defaultValue;
         }
 
@@ -810,7 +816,6 @@ public class Utils {
         }
         return jsonObject;
     }
-
 
     public static <T> T firstNotNull(T... args) {
         for (T arg : args) {

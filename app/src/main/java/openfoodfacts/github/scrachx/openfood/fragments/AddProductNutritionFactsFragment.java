@@ -64,6 +64,7 @@ import openfoodfacts.github.scrachx.openfood.models.Nutriments;
 import openfoodfacts.github.scrachx.openfood.models.OfflineSavedProduct;
 import openfoodfacts.github.scrachx.openfood.models.Product;
 import openfoodfacts.github.scrachx.openfood.utils.CustomValidatingEditTextView;
+import openfoodfacts.github.scrachx.openfood.utils.EditTextUtils;
 import openfoodfacts.github.scrachx.openfood.utils.FileUtils;
 import openfoodfacts.github.scrachx.openfood.utils.ProductUtils;
 import openfoodfacts.github.scrachx.openfood.utils.QuantityParserUtil;
@@ -676,7 +677,7 @@ public class AddProductNutritionFactsFragment extends BaseFragment implements Ph
                 } else if (isDataPerServing()) {
                     targetMap.put(OfflineSavedProduct.KEYS.PARAM_NUTRITION_DATA_PER, "serving");
                 }
-                if (servingSize.getText() == null || servingSize.getText().toString().isEmpty()) {
+                if (servingSize.getText() == null || EditTextUtils.isEmpty(servingSize)) {
                     targetMap.put(OfflineSavedProduct.KEYS.PARAM_SERVING_SIZE, "");
                 } else {
                     String servingSizeValue = this.servingSize.getText().toString() + ObjectUtils.toString(this.servingSize.getAttachedSpinner().getSelectedItem());
@@ -702,27 +703,35 @@ public class AddProductNutritionFactsFragment extends BaseFragment implements Ph
     }
 
     /**
-     * adds only those fields to the query map which are not empty.
+     * adds only those fields to the query map which are not empty and has changed from product.
      */
     public void getDetails(Map<String, String> targetMap) {
         if (activity instanceof AddProductActivity) {
             if (noNutritionData.isChecked()) {
-                targetMap.put(OfflineSavedProduct.KEYS.PARAM_NO_NUTRITION_DATA, "on");
+                if (product == null || !"on".equals(product.getNoNutritionData())) {
+                    targetMap.put(OfflineSavedProduct.KEYS.PARAM_NO_NUTRITION_DATA, "on");
+                }
             } else {
                 if (isDataPer100()) {
-                    targetMap.put(OfflineSavedProduct.KEYS.PARAM_NUTRITION_DATA_PER, ProductUtils.DEFAULT_NUTRITION_SIZE);
+                    if (product == null || !ProductUtils.DEFAULT_NUTRITION_SIZE.equals(product.getNutritionDataPer())) {
+                        targetMap.put(OfflineSavedProduct.KEYS.PARAM_NUTRITION_DATA_PER, ProductUtils.DEFAULT_NUTRITION_SIZE);
+                    }
                 } else if (isDataPerServing()) {
-                    targetMap.put(OfflineSavedProduct.KEYS.PARAM_NUTRITION_DATA_PER, "serving");
+                    if (product == null || !"serving".equals(product.getNutritionDataPer())) {
+                        targetMap.put(OfflineSavedProduct.KEYS.PARAM_NUTRITION_DATA_PER, "serving");
+                    }
                 }
-                if (servingSize.getText() != null && !servingSize.getText().toString().isEmpty()) {
-                    String servingSizeValue = this.servingSize.getText().toString() + ObjectUtils.toString(this.servingSize.getAttachedSpinner().getSelectedItem().toString());
-                    targetMap.put(OfflineSavedProduct.KEYS.PARAM_SERVING_SIZE, servingSizeValue);
+                if (EditTextUtils.isNotEmpty(servingSize)) {
+                    String servingSizeValue = EditTextUtils.content(servingSize) + ObjectUtils.toString(this.servingSize.getAttachedSpinner().getSelectedItem().toString());
+                    if (product == null || !servingSizeValue.equals(product.getServingSize())) {
+                        targetMap.put(OfflineSavedProduct.KEYS.PARAM_SERVING_SIZE, servingSizeValue);
+                    }
                 }
                 for (CustomValidatingEditTextView editTextView : getAllEditTextView()) {
                     if (servingSize.getEntryName().equals(editTextView.getEntryName())) {
                         continue;
                     }
-                    if (editTextView.getText() != null && !editTextView.getText().toString().isEmpty()) {
+                    if (editTextView.getText() != null && EditTextUtils.isNotEmpty(editTextView)) {
                         addNutrientToMap(editTextView, targetMap);
                     }
                 }
